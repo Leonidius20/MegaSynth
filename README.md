@@ -1,2 +1,2 @@
 # MegaSynth
-A basic volume control effect plug-in with IGraphics GUI
+A basic subtractive synthesizer plug-in with IGraphics GUI

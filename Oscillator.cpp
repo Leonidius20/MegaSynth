@@ -4,6 +4,7 @@
 
 using std::numbers::pi;
 using std::sin;
+using std::fabs;
 
 void Oscillator::setFrequency(double frequency) {
   this->frequency = frequency;
@@ -35,10 +36,45 @@ void Oscillator::generate(double* buffer, int numFrames) {
     }
     break;
   case OscillatorWaveform::WAVEFORM_SAW:
+    for (int i = 0; i < numFrames; i++)
+    {
+      buffer[i] = 1.0 - (2.0 * this->phase / twoPi);
+      this->phase += this->phaseIncrement;
+      while (this->phase >= twoPi)
+      {
+        this->phase -= twoPi;
+      }
+    }
     break;
   case OscillatorWaveform::WAVEFORM_SQUARE:
+    for (int i = 0; i < numFrames; i++)
+    {
+      if (this->phase <= pi)
+      {
+        buffer[i] = 1.0;
+      }
+      else
+      {
+        buffer[i] = -1.0;
+      }
+      this->phase += this->phaseIncrement;
+      while (this->phase >= twoPi)
+      {
+        this->phase -= twoPi;
+      }
+    }
     break;
   case OscillatorWaveform::WAVEFORM_TRIANGLE:
+    for (int i = 0; i < numFrames; i++)
+    {
+      double value = -1.0 + (2.0 * this->phase / twoPi);
+      buffer[i] = 2.0 * (fabs(value) - 0.5);
+      this->phase += this->phaseIncrement;
+      while (this->phase >= twoPi)
+      {
+        this->phase -= twoPi;
+      }
+    }
     break;
   default:
     break;

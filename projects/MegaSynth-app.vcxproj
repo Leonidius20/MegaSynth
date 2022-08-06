@@ -323,6 +323,7 @@
     <ClInclude Include="..\..\..\IPlug\IPlug_include_in_plug_hdr.h" />
     <ClInclude Include="..\..\..\IPlug\IPlug_include_in_plug_src.h" />
     <ClInclude Include="..\MegaSynth.h" />
+    <ClInclude Include="..\MIDIReceiver.h" />
     <ClInclude Include="..\Oscillator.h" />
     <ClInclude Include="..\resources\resource.h" />
   </ItemGroup>
@@ -367,6 +368,9 @@
     <ClCompile Include="..\..\..\IPlug\IPlugProcessor.cpp" />
     <ClCompile Include="..\..\..\IPlug\IPlugTimer.cpp" />
     <ClCompile Include="..\MegaSynth.cpp" />
+    <ClCompile Include="..\MIDIReceiver.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\Oscillator.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -134,6 +134,8 @@
     <ClCompile Include="..\..\..\IGraphics\IGraphicsEditorDelegate.cpp">
       <Filter>IGraphics</Filter>
     </ClCompile>
+    <ClCompile Include="..\MIDIReceiver.cpp" />
+    <ClCompile Include="..\Oscillator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../config.h" />
@@ -354,6 +356,8 @@
     <ClInclude Include="..\..\..\IPlug\IPlugPluginBase.h">
       <Filter>IPlug</Filter>
     </ClInclude>
+    <ClInclude Include="..\MIDIReceiver.h" />
+    <ClInclude Include="..\Oscillator.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">

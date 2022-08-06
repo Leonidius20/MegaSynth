@@ -78,6 +78,7 @@
       <Filter>IGraphics\Drawing</Filter>
     </ClCompile>
     <ClCompile Include="..\Oscillator.cpp" />
+    <ClCompile Include="..\MIDIReceiver.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\MegaSynth.h" />
@@ -257,6 +258,7 @@
       <Filter>IPlug</Filter>
     </ClInclude>
     <ClInclude Include="..\Oscillator.h" />
+    <ClInclude Include="..\MIDIReceiver.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">

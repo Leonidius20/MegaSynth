@@ -21,12 +21,23 @@ class MegaSynth final : public iplug::Plugin
 private:
   Oscillator osciallator;
   MIDIReceiver midiReceiver;
+  
+
+  void processVirtualKeyboard();
 
 public:
   MegaSynth(const iplug::InstanceInfo& info);
   void OnReset() override;
   void OnParamChange(int paramId) override;
   void ProcessMidiMsg(const iplug::IMidiMsg& msg) override;
+
+  inline int getNumKeysPressed() const { return midiReceiver.getNumKeysPressed(); }
+  inline bool getKeyStatus(int keyIndex) const { return midiReceiver.getKeyStatus(keyIndex); }
+
+  static const int virtualKeyboardMinimumNoteNumber = 48;
+  int lastVirtualKeyboardNoteNumber = virtualKeyboardMinimumNoteNumber - 1;
+
+  IControl* virtualKeyboard;
 
 #if IPLUG_DSP // http://bit.ly/2S64BDd
   void ProcessBlock(iplug::sample** inputs, iplug::sample** outputs, int nFrames) override;

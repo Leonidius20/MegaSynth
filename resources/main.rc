@@ -13,6 +13,28 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
+// Ukrainian (Ukraine) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_UKR)
+LANGUAGE LANG_UKRAINIAN, SUBLANG_DEFAULT
+#pragma code_page(1251)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// PNG
+//
+
+IDB_PNG1                PNG                     "img\\keyboard_background.png"
+
+IDB_PNG2                PNG                     "img\\pressed_black_key.png"
+
+IDB_PNG3                PNG                     "img\\pressed_white_key.png"
+
+#endif    // Ukrainian (Ukraine) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
 // English (United Kingdom) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
@@ -135,21 +157,24 @@ END
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE
+2 TEXTINCLUDE 
 BEGIN
     "#include ""winres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE
+3 TEXTINCLUDE 
 BEGIN
     "#include ""..\\config.h""\r\n"
-    "ROBOTO_FN TTF ROBOTO_FN\0"
+    "ROBOTO_FN TTF ROBOTO_FN\r\n"
+    "KEYBOARD_BACKGROUND_FN PNG KEYBOARD_BACKGROUND_FN\r\n"
+    "PRESSED_BLACK_KEY_FN PNG PRESSED_BLACK_KEY_FN\r\n"
+    "PRESSED_WHITE_KEYS_FN PNG PRESSED_WHITE_KEYS_FN \0"
 END
 
 #endif    // APSTUDIO_INVOKED
@@ -163,6 +188,7 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_ICON1               ICON                    "MegaSynth.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -178,7 +204,6 @@ BEGIN
     "E",            ID_LIVE_EDIT,           VIRTKEY, CONTROL, NOINVERT
 END
 
-/////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -186,8 +211,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION 0,0,1,0
-PRODUCTVERSION 0,0,1,0
+ FILEVERSION 0,0,1,0
+ PRODUCTVERSION 0,0,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -230,6 +255,9 @@ END
 //
 #include "..\config.h"
 ROBOTO_FN TTF ROBOTO_FN
+KEYBOARD_BACKGROUND_FN PNG KEYBOARD_BACKGROUND_FN
+PRESSED_BLACK_KEY_FN PNG PRESSED_BLACK_KEY_FN
+PRESSED_WHITE_KEYS_FN PNG PRESSED_WHITE_KEYS_FN 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

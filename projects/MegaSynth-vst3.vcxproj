@@ -410,6 +410,15 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\resources\img\keyboard_background.png" />
+    <Image Include="..\resources\img\pressed_black_key.png" />
+    <Image Include="..\resources\img\pressed_white_key.png" />
+    <Image Include="..\resources\MegaSynth.ico" />
+    <Image Include="img\keyboard_background.png" />
+    <Image Include="img\pressed_black_key.png" />
+    <Image Include="img\pressed_white_key.png" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

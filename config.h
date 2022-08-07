@@ -58,3 +58,6 @@
 #define APP_SIGNAL_VECTOR_SIZE 64
 
 #define ROBOTO_FN "Roboto-Regular.ttf"
+#define KEYBOARD_BACKGROUND_FN "keyboard_background.png"
+#define PRESSED_BLACK_KEY_FN "pressed_black_key.png"
+#define PRESSED_WHITE_KEYS_FN "pressed_white_keys.png"

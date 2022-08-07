@@ -41,6 +41,10 @@ MegaSynth::MegaSynth(const InstanceInfo& info)
     pGraphics->LoadFont("Roboto-Regular", ROBOTO_FN);
     const IRECT b = pGraphics->GetBounds();
     pGraphics->AttachControl(new ITextControl(b.GetMidVPadded(50), "Hello iPlug 2!", IText(50)));
+
+    this->virtualKeyboard = new IVKeyboardControl(b.GetFromBottom(75), this->virtualKeyboardMinimumNoteNumber, this->virtualKeyboardMinimumNoteNumber + 5 * 12);
+    pGraphics->AttachControl(this->virtualKeyboard);
+    
     // pGraphics->AttachControl(new IVKnobControl(b.GetCentredInside(100).GetVShifted(-100), kFrequency));
   };
 #endif
@@ -89,5 +93,6 @@ void MegaSynth::OnParamChange(int paramId) {
 
 void MegaSynth::ProcessMidiMsg(const IMidiMsg& msg) {
   this->midiReceiver.onMessageReceived(msg);
+  // this->virtualKeyboard->SetDirty();                  // to display the MIDI note as pressed/unpressed
 }
 #endif

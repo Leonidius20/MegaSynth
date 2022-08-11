@@ -335,6 +335,8 @@
     <ClInclude Include="..\MIDIReceiver.h" />
     <ClInclude Include="..\Oscillator.h" />
     <ClInclude Include="..\resources\resource.h" />
+    <ClInclude Include="..\signal\Delegate.h" />
+    <ClInclude Include="..\signal\GallantSignal.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Dependencies\IPlug\VST3_SDK\base\source\baseiids.cpp" />

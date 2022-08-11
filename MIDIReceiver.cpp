@@ -52,6 +52,7 @@ void MIDIReceiver::advance()
         this->lastNoteNumber = noteNumber;
         this->lastFrequency = this->noteNumberToFrequency(noteNumber);
         this->lastVelocity = velocity;
+        this->noteOn(noteNumber, velocity);
       }
     }
     else // if the message was Note Off or Velocity = 0
@@ -65,8 +66,7 @@ void MIDIReceiver::advance()
       if (noteNumber == lastNoteNumber)         // if last note was released, nothing should play
       {
         this->lastNoteNumber = -1;
-        this->lastFrequency = -1;
-        this->lastVelocity = 0;
+        this->noteOff(noteNumber, this->lastVelocity);
       }
     }
 

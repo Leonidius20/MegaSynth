@@ -44,10 +44,13 @@ MegaSynth::MegaSynth(const InstanceInfo& info)
 
     this->virtualKeyboard = new IVKeyboardControl(b.GetFromBottom(75), this->virtualKeyboardMinimumNoteNumber, this->virtualKeyboardMinimumNoteNumber + 5 * 12);
     pGraphics->AttachControl(this->virtualKeyboard);
-    
+
     // pGraphics->AttachControl(new IVKnobControl(b.GetCentredInside(100).GetVShifted(-100), kFrequency));
   };
 #endif
+
+  this->midiReceiver.noteOn.Connect(this, &MegaSynth::onNoteOn);
+  this->midiReceiver.noteOff.Connect(this, &MegaSynth::onNoteOff);
 }
 
 #if IPLUG_DSP
@@ -67,17 +70,6 @@ void MegaSynth::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
     }
     else
       this->osciallator.setMuted(true);
-
-    // for testing purposes - looping the envelope
-    if (envelopeGenerator.getCurrentStage() == EnvelopeGenerator::OFF)
-    {
-      envelopeGenerator.enterStage(EnvelopeGenerator::ATTACK);
-    }
-    if (envelopeGenerator.getCurrentStage() == EnvelopeGenerator::SUSTAIN)
-    {
-      envelopeGenerator.enterStage(EnvelopeGenerator::RELEASE);
-    }
-
 
     leftOutput[i] = this->osciallator.nextSample() * this->envelopeGenerator.nextSample() * velocity / 127.0;
   }

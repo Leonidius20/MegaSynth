@@ -2,6 +2,7 @@
 
 // #include "IPlug_include_in_plug_hdr.h"
 #include "IPlugMidi.h"
+#include "signal/GallantSignal.h";
 
 class MIDIReceiver
 {
@@ -32,4 +33,6 @@ public:
   void flush(int numFrames);
   inline void resize(int blockSize) { queue.Resize(blockSize); }
 
+  Gallant::Signal2<int, int> noteOn;
+  Gallant::Signal2<int, int> noteOff;
 };

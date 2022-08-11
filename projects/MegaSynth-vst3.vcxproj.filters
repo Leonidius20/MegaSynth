@@ -360,6 +360,8 @@
     </ClInclude>
     <ClInclude Include="..\MIDIReceiver.h" />
     <ClInclude Include="..\Oscillator.h" />
+    <ClInclude Include="..\signal\Delegate.h" />
+    <ClInclude Include="..\signal\GallantSignal.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -418,6 +420,9 @@
     </Filter>
     <Filter Include="IPlug\VST3\VST3_SDK\plugininterfaces\base">
       <UniqueIdentifier>{5f06b03e-5093-46c0-9513-efb4e494c857}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="signal">
+      <UniqueIdentifier>{1ae6ffef-9e42-4ead-888e-3b6360dd4d3d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

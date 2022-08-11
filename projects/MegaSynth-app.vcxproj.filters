@@ -261,6 +261,12 @@
     </ClInclude>
     <ClInclude Include="..\Oscillator.h" />
     <ClInclude Include="..\MIDIReceiver.h" />
+    <ClInclude Include="..\signal\GallantSignal.h">
+      <Filter>signal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\signal\Delegate.h">
+      <Filter>signal</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -292,6 +298,9 @@
     </Filter>
     <Filter Include="IPlug\APP\RTAudioMidi\include">
       <UniqueIdentifier>{649c5de3-b4c2-4de9-8d57-3b1762646259}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="signal">
+      <UniqueIdentifier>{11f93f86-41fa-40dc-b8c4-c059ef8ca12f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

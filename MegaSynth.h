@@ -27,6 +27,14 @@ private:
 
   void processVirtualKeyboard();
 
+  inline void onNoteOn(const int noteNumber, const int velocity) {
+    this->envelopeGenerator.enterStage(EnvelopeGenerator::EnvelopeStage::ATTACK);
+  }
+
+  inline void onNoteOff(const int noteNumber, const int velocity) {
+    this->envelopeGenerator.enterStage(EnvelopeGenerator::EnvelopeStage::RELEASE);
+  }
+
 public:
   MegaSynth(const iplug::InstanceInfo& info);
   void OnReset() override;

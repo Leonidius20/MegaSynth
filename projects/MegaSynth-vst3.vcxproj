@@ -395,6 +395,8 @@
     <ClCompile Include="..\..\..\IPlug\IPlugTimer.cpp" />
     <ClCompile Include="..\..\..\IPlug\VST3\IPlugVST3.cpp" />
     <ClCompile Include="..\..\..\IPlug\VST3\IPlugVST3_ProcessorBase.cpp" />
+    <ClCompile Include="..\EnvelopeGenerator.cpp" />
+    <ClCompile Include="..\EnvelopeGenerator.ixx" />
     <ClCompile Include="..\MegaSynth.cpp" />
     <ClCompile Include="..\MIDIReceiver.cpp" />
     <ClCompile Include="..\Oscillator.cpp" />

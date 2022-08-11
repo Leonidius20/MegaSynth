@@ -5,6 +5,8 @@
 #include "Oscillator.h"
 #include "MIDIReceiver.h"
 
+import megasynth.envelope_generator;
+
 const int kNumPresets = 1;
 
 enum EParams
@@ -21,7 +23,7 @@ class MegaSynth final : public iplug::Plugin
 private:
   Oscillator osciallator;
   MIDIReceiver midiReceiver;
-  
+  EnvelopeGenerator envelopeGenerator;
 
   void processVirtualKeyboard();
 

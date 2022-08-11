@@ -367,6 +367,8 @@
     <ClCompile Include="..\..\..\IPlug\IPlugPluginBase.cpp" />
     <ClCompile Include="..\..\..\IPlug\IPlugProcessor.cpp" />
     <ClCompile Include="..\..\..\IPlug\IPlugTimer.cpp" />
+    <ClCompile Include="..\EnvelopeGenerator.cpp" />
+    <ClCompile Include="..\EnvelopeGenerator.ixx" />
     <ClCompile Include="..\MegaSynth.cpp" />
     <ClCompile Include="..\MIDIReceiver.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>

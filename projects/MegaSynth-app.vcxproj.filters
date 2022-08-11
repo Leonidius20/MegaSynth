@@ -79,6 +79,8 @@
     </ClCompile>
     <ClCompile Include="..\Oscillator.cpp" />
     <ClCompile Include="..\MIDIReceiver.cpp" />
+    <ClCompile Include="..\EnvelopeGenerator.cpp" />
+    <ClCompile Include="..\EnvelopeGenerator.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\MegaSynth.h" />

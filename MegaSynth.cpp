@@ -68,7 +68,18 @@ void MegaSynth::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
     else
       this->osciallator.setMuted(true);
 
-    leftOutput[i] = this->osciallator.nextSample() * velocity / 127.0;
+    // for testing purposes - looping the envelope
+    if (envelopeGenerator.getCurrentStage() == EnvelopeGenerator::OFF)
+    {
+      envelopeGenerator.enterStage(EnvelopeGenerator::ATTACK);
+    }
+    if (envelopeGenerator.getCurrentStage() == EnvelopeGenerator::SUSTAIN)
+    {
+      envelopeGenerator.enterStage(EnvelopeGenerator::RELEASE);
+    }
+
+
+    leftOutput[i] = this->osciallator.nextSample() * this->envelopeGenerator.nextSample() * velocity / 127.0;
   }
 
   copy(leftOutput, leftOutput + nFrames, rightOutput);
@@ -76,7 +87,10 @@ void MegaSynth::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
   this->midiReceiver.flush(nFrames);
 }
 
-void MegaSynth::OnReset() { this->osciallator.setSampleRate(GetSampleRate()); }
+void MegaSynth::OnReset() {
+  this->osciallator.setSampleRate(GetSampleRate());
+  this->envelopeGenerator.setSampleRate(GetSampleRate());
+}
 
 void MegaSynth::OnParamChange(int paramId) {
   // MUTEX LOCK?

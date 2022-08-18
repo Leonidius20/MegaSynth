@@ -2,20 +2,33 @@
 
 #include "IPlug_include_in_plug_hdr.h"
 #include "IPlugMidi.h"
-#include "Oscillator.h"
-#include "MIDIReceiver.h"
 
+import megasynth.oscillator;
+import megasynth.midi_receiver;
 import megasynth.envelope_generator;
+import megasynth.filter;
 
 const int kNumPresets = 1;
 
 enum EParams
 {
   waveform = 0,
+
   attack,
   decay,
   sustain,
   release,
+
+  filterMode,
+  filterCutoff,
+  filterResonance,
+
+  filterAttack,
+  filterDecay,
+  filterSustain,
+  filterRelease,
+  filterEnvelopeAmount,
+
   kNumParams
 };
 
@@ -28,8 +41,7 @@ private:
   Oscillator osciallator;
   MIDIReceiver midiReceiver;
   EnvelopeGenerator envelopeGenerator;
-
-  void processVirtualKeyboard();
+  Filter filter;
 
   inline void onNoteOn(const int noteNumber, const int velocity) {
     this->envelopeGenerator.enterStage(EnvelopeGenerator::Stage::ATTACK);

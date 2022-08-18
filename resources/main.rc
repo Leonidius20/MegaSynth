@@ -24,12 +24,6 @@ LANGUAGE LANG_UKRAINIAN, SUBLANG_DEFAULT
 // PNG
 //
 
-IDB_PNG1                PNG                     "img\\keyboard_background.png"
-
-IDB_PNG2                PNG                     "img\\pressed_black_key.png"
-
-IDB_PNG3                PNG                     "img\\pressed_white_key.png"
-
 #endif    // Ukrainian (Ukraine) resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -172,10 +166,8 @@ END
 BEGIN
     "#include ""..\\config.h""\r\n"
     "ROBOTO_FN TTF ROBOTO_FN\r\n"
-    "KEYBOARD_BACKGROUND_FN PNG KEYBOARD_BACKGROUND_FN\r\n"
-    "PRESSED_BLACK_KEY_FN PNG PRESSED_BLACK_KEY_FN\r\n"
-    "PRESSED_WHITE_KEYS_FN PNG PRESSED_WHITE_KEYS_FN \r\n"
-    "WAVEFORMS_FN PNG WAVEFORMS_FN\0"
+    "WAVEFORMS_FN PNG WAVEFORMS_FN\r\n"
+    "FILTER_MODES_FN PNG FILTER_MODES_FN\0"
 END
 
 #endif    // APSTUDIO_INVOKED
@@ -256,10 +248,8 @@ END
 //
 #include "..\config.h"
 ROBOTO_FN TTF ROBOTO_FN
-KEYBOARD_BACKGROUND_FN PNG KEYBOARD_BACKGROUND_FN
-PRESSED_BLACK_KEY_FN PNG PRESSED_BLACK_KEY_FN
-PRESSED_WHITE_KEYS_FN PNG PRESSED_WHITE_KEYS_FN 
 WAVEFORMS_FN PNG WAVEFORMS_FN
+FILTER_MODES_FN PNG FILTER_MODES_FN
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

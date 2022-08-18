@@ -1,7 +1,11 @@
-#include <cmath>
-#include <algorithm>
+module;
+
 #include "IPlugMidi.h"
-#include "MIDIReceiver.h"
+
+module megasynth.midi_receiver;
+
+import <cmath>;
+import <algorithm>;
 
 using std::pow;
 using std::fill;

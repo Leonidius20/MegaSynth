@@ -1,6 +1,7 @@
-#include <cmath>
-#include <numbers>
-#include "Oscillator.h"
+module megasynth.oscillator;
+
+import <cmath>;
+import <numbers>;
 
 using std::numbers::pi;
 using std::sin;
@@ -28,7 +29,7 @@ void Oscillator::generate(double* buffer, int numFrames) {
 
   switch (this->waveform)
   {
-  case OscillatorWaveform::WAVEFORM_SINE:
+  case Waveform::SINE:
     for (int i = 0; i < numFrames; i++)
     {
       buffer[i] = sin(this->phase);
@@ -39,7 +40,7 @@ void Oscillator::generate(double* buffer, int numFrames) {
       }
     }
     break;
-  case OscillatorWaveform::WAVEFORM_SAW:
+  case Waveform::SAW:
     for (int i = 0; i < numFrames; i++)
     {
       buffer[i] = 1.0 - (2.0 * this->phase / twoPi);
@@ -50,7 +51,7 @@ void Oscillator::generate(double* buffer, int numFrames) {
       }
     }
     break;
-  case OscillatorWaveform::WAVEFORM_SQUARE:
+  case Waveform::SQUARE:
     for (int i = 0; i < numFrames; i++)
     {
       if (this->phase <= pi)
@@ -68,7 +69,7 @@ void Oscillator::generate(double* buffer, int numFrames) {
       }
     }
     break;
-  case OscillatorWaveform::WAVEFORM_TRIANGLE:
+  case Waveform::TRIANGLE:
     for (int i = 0; i < numFrames; i++)
     {
       double value = -1.0 + (2.0 * this->phase / twoPi);
@@ -93,13 +94,13 @@ double Oscillator::nextSample() {
 
   switch (this->waveform)
   {
-  case OscillatorWaveform::WAVEFORM_SINE:
+  case Waveform::SINE:
     value = sin(this->phase);
     break;
-  case OscillatorWaveform::WAVEFORM_SAW:
+  case Waveform::SAW:
     value = 1.0 - (2.0 * this->phase / twoPi);
     break;
-  case OscillatorWaveform::WAVEFORM_SQUARE:
+  case Waveform::SQUARE:
     if (this->phase <= pi)
     {
       value = 1.0;
@@ -109,7 +110,7 @@ double Oscillator::nextSample() {
       value = -1.0;
     }
     break;
-  case OscillatorWaveform::WAVEFORM_TRIANGLE:
+  case Waveform::TRIANGLE:
     value = -1.0 + (2.0 * this->phase / twoPi);
     value = 2.0 * (fabs(value) - 0.5);
     break;

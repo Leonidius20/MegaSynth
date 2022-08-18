@@ -1,10 +1,12 @@
-#pragma once
+module;
 
 // #include "IPlug_include_in_plug_hdr.h"
 #include "IPlugMidi.h"
 #include "signal/GallantSignal.h";
 
-class MIDIReceiver
+export module megasynth.midi_receiver;
+
+export class MIDIReceiver
 {
 private:
   iplug::IMidiQueue queue;

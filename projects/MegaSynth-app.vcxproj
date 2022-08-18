@@ -381,6 +381,9 @@
     <ResourceCompile Include="..\resources\main.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\resources\img\keyboard_background.png" />
+    <Image Include="..\resources\img\pressed_black_key.png" />
+    <Image Include="..\resources\img\pressed_white_key.png" />
     <Image Include="..\resources\MegaSynth.ico" />
   </ItemGroup>
   <ItemGroup>

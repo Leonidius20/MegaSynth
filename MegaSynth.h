@@ -11,7 +11,11 @@ const int kNumPresets = 1;
 
 enum EParams
 {
-  // kFrequency = 0,
+  waveform = 0,
+  attack,
+  decay,
+  sustain,
+  release,
   kNumParams
 };
 
@@ -28,11 +32,19 @@ private:
   void processVirtualKeyboard();
 
   inline void onNoteOn(const int noteNumber, const int velocity) {
-    this->envelopeGenerator.enterStage(EnvelopeGenerator::EnvelopeStage::ATTACK);
+    this->envelopeGenerator.enterStage(EnvelopeGenerator::Stage::ATTACK);
   }
 
   inline void onNoteOff(const int noteNumber, const int velocity) {
-    this->envelopeGenerator.enterStage(EnvelopeGenerator::EnvelopeStage::RELEASE);
+    this->envelopeGenerator.enterStage(EnvelopeGenerator::Stage::RELEASE);
+  }
+
+  inline void onBeganEnvelopeCycle() {
+    this->osciallator.setMuted(false);
+  }
+
+  inline void onFinishedEnvelopeCycle() {
+    this->osciallator.setMuted(true);
   }
 
 public:

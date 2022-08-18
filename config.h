@@ -61,3 +61,4 @@
 #define KEYBOARD_BACKGROUND_FN "keyboard_background.png"
 #define PRESSED_BLACK_KEY_FN "pressed_black_key.png"
 #define PRESSED_WHITE_KEYS_FN "pressed_white_keys.png"
+#define WAVEFORMS_FN "waveform.png"

@@ -326,5 +326,8 @@
     <Image Include="..\resources\MegaSynth.ico">
       <Filter>resources</Filter>
     </Image>
+    <Image Include="..\resources\img\keyboard_background.png" />
+    <Image Include="..\resources\img\pressed_black_key.png" />
+    <Image Include="..\resources\img\pressed_white_key.png" />
   </ItemGroup>
 </Project>

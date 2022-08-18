@@ -1,10 +1,14 @@
+module;
+
+#include "signal/GallantSignal.h"
+
 export module megasynth.envelope_generator;
 
 export class EnvelopeGenerator
 {
 public:
 
-  enum EnvelopeStage
+  enum Stage
   {
     OFF = 0,
     ATTACK,
@@ -14,18 +18,22 @@ public:
     numStages
   };
 
-  void enterStage(EnvelopeStage stage);
+  void enterStage(Stage stage);
   double nextSample();
   void setSampleRate(double newSampleRate);
-  inline EnvelopeStage getCurrentStage() const { return currentStage; }
+  void setStageValue(Stage stage, double value);
+  inline Stage getCurrentStage() const { return currentStage; }
   const double minimumLevel = 0.0001;
 
+  Gallant::Signal0<> beganEnvelopeCycle;
+  Gallant::Signal0<> finishedEnvelopeCycle;
+
 private:
-  EnvelopeStage currentStage = EnvelopeStage::OFF;
+  Stage currentStage = Stage::OFF;
   double currentLevel = minimumLevel;
   double multiplier = 1.0;
   double sampleRate = 44100.0;
-  double stageValues[EnvelopeStage::numStages] = {0.0, 0.01, 0.5, 0.1, 1.0}; // off, A, D, S, R
+  double stageValues[Stage::numStages] = {0.0, 0.01, 0.5, 0.1, 1.0}; // off, A, D, S, R
   void calculateMultiplier(double startLevel, double endLevel, unsigned long long lengthInSamples);
   unsigned long long currentSampleIndex = 0;
   unsigned long long nextStageSampleIndex = 0; // sample at which the time based modes (A, D, R) switch

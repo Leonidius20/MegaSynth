@@ -2,15 +2,16 @@
 
 enum OscillatorWaveform
 {
-  WAVEFORM_SINE,
+  WAVEFORM_SINE = 0,
   WAVEFORM_SAW,
   WAVEFORM_SQUARE,
-  WAVEFORM_TRIANGLE
+  WAVEFORM_TRIANGLE,
+  kNumberOfWaveforms
 };
 
 class Oscillator {
 private:
-  OscillatorWaveform waveform = WAVEFORM_TRIANGLE;
+  OscillatorWaveform waveform = WAVEFORM_SINE;
   double frequency = 440.0;
   double phase = 0.0;
   double sampleRate = 44100.0;

@@ -41,14 +41,20 @@ private:
   Oscillator osciallator;
   MIDIReceiver midiReceiver;
   EnvelopeGenerator envelopeGenerator;
+
   Filter filter;
+  EnvelopeGenerator filterEnvelope;
+  double filterEnvelopeAmount = 0.0;
+
 
   inline void onNoteOn(const int noteNumber, const int velocity) {
     this->envelopeGenerator.enterStage(EnvelopeGenerator::Stage::ATTACK);
+    this->filterEnvelope.enterStage(EnvelopeGenerator::Stage::ATTACK);
   }
 
   inline void onNoteOff(const int noteNumber, const int velocity) {
     this->envelopeGenerator.enterStage(EnvelopeGenerator::Stage::RELEASE);
+    this->filterEnvelope.enterStage(EnvelopeGenerator::Stage::RELEASE);
   }
 
   inline void onBeganEnvelopeCycle() {

@@ -1,7 +1,9 @@
-module megasynth.oscillator;
+module;
 
-import <cmath>;
-import <numbers>;
+#include <cmath>;
+#include <numbers>;
+
+module megasynth.oscillator;
 
 using std::numbers::pi;
 using std::sin;

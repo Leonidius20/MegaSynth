@@ -1,3 +1,7 @@
+module;
+
+#include <algorithm>
+
 export module megasynth.filter;
 
 export class Filter {
@@ -22,19 +26,32 @@ public:
     calculateFeedbackAmount();
   }
 
+  inline void setCutoffMod(double cutoffMod) {
+    this->cutoffMod = cutoffMod;
+    calculateFeedbackAmount();
+  }
+
   inline void setFilterMode(Mode mode) { this->mode = mode; }
 
 
 private:
   double cutoff = 0.99;
   double resonance = 0.0;
+  double cutoffMod = 0.0;
+
   Mode mode = Mode::LOW_PASS;
   double feedbackAmount = 0.0;
   double buf0 = 0.0;
   double buf1 = 0.0;
+  double buf2 = 0.0;
+  double buf3 = 0.0;
 
   inline void calculateFeedbackAmount() {
-    feedbackAmount = resonance + resonance / (1.0 - cutoff);
+    feedbackAmount = resonance + resonance / (1.0 - getCalculatedCutoff());
+  }
+
+  inline double getCalculatedCutoff() const {
+    return std::clamp(cutoff + cutoffMod, 0.01, 0.99);
   }
 
 };

@@ -7,7 +7,7 @@
 // #include "Oscillator.h"
 // #include "MIDIReceiver.h"
 
-import <algorithm>;
+#include <algorithm>;
 
 using std::copy;
 
@@ -28,18 +28,24 @@ using iplug::igraphics::MakeGraphics;
 MegaSynth::MegaSynth(const InstanceInfo& info)
 : Plugin(info, MakeConfig(kNumParams, kNumPresets))
 {
-  // GetParam(kFrequency)->InitDouble("Frequency", 440., 50., 20000., 0.01, "Hz");
   GetParam(EParams::waveform)->InitEnum("Waveform", Oscillator::Waveform::SINE, Oscillator::Waveform::kNumberOfWaveforms, "", 0, "", "Sine", "Saw", "Square", "Triangle");
 
-  GetParam(EParams::attack)->InitDouble("Attack", 0.01, 0.01, 10.0, 0.001, "s"); // setShape = 3?
-  GetParam(EParams::decay)->InitDouble("Decay", 0.5, 0.01, 15.0, 0.001, "s");     // setShape = 3?
-  GetParam(EParams::sustain)->InitDouble("Sustain", 0.1, 0.001, 1.0, 0.001); // setShape = 2?
-  GetParam(EParams::release)->InitDouble("Release", 1.0, 0.001, 15.0, 0.001, "s"); // setShape = 3?
+  GetParam(EParams::attack)->InitDouble("Attack", 0.01, 0.01, 10.0, 0.001, "s", 0, "", IParam::ShapePowCurve(3));
+  GetParam(EParams::decay)->InitDouble("Decay", 0.5, 0.01, 15.0, 0.001, "s", 0, "", IParam::ShapePowCurve(3));
+  GetParam(EParams::sustain)->InitDouble("Sustain", 0.1, 0.001, 1.0, 0.001, "", 0, "", IParam::ShapePowCurve(2));
+  GetParam(EParams::release)->InitDouble("Release", 1.0, 0.001, 15.0, 0.001, "s", 0, "", IParam::ShapePowCurve(3));
 
   GetParam(EParams::filterMode)->InitEnum("Filter mode", Filter::Mode::LOW_PASS, Filter::Mode::kNumModes, "", 0, "", "Low Pass", "High Pass", "Band Pass");
 
-  GetParam(EParams::filterCutoff)->InitDouble("Filter Cutoff", 0.99, 0.01, 0.99, 0.001); // setShape = 2
+  GetParam(EParams::filterCutoff)->InitDouble("Filter Cutoff", 0.99, 0.01, 0.99, 0.001, "", 0, "", IParam::ShapePowCurve(2));
   GetParam(EParams::filterResonance)->InitDouble("Filter Resonance", 0.01, 0.01, 1.0, 0.001);
+
+  GetParam(EParams::filterAttack)->InitDouble("Filter Attack", 0.01, 0.01, 10.0, 0.001, "s", 0, "", IParam::ShapePowCurve(3));
+  GetParam(EParams::filterDecay)->InitDouble("Filter Decay", 0.5, 0.01, 15.0, 0.001, "s", 0, "", IParam::ShapePowCurve(3));
+  GetParam(EParams::filterSustain)->InitDouble("Filter Sustain", 0.1, 0.001, 1.0, 0.001, "", 0, "", IParam::ShapePowCurve(2));
+  GetParam(EParams::filterRelease)->InitDouble("Filter Release", 1.0, 0.001, 15.0, 0.001, "", 0, "", IParam::ShapePowCurve(3));
+
+  GetParam(EParams::filterEnvelopeAmount)->InitDouble("Filter Env Amount", 0.0, -1.0, 1.0, 0.001);
   
 
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
@@ -92,7 +98,30 @@ MegaSynth::MegaSynth(const InstanceInfo& info)
     auto* resonanceKnob = new IVKnobControl(cutoffKnob->GetRECT().GetHShifted(70), EParams::filterResonance, "resonance");
     pGraphics->AttachControl(resonanceKnob);
 
-    // pGraphics->AttachControl(new IVKnobControl(b.GetCentredInside(100).GetVShifted(-100), kFrequency));
+    // filter attack
+    auto filterAttackKnobPos = resonanceKnob->GetRECT().GetHShifted(70);
+    pGraphics->AttachControl(new IVKnobControl(
+      filterAttackKnobPos, EParams::filterAttack, "fltr attack"));
+
+    // filter decay
+    auto filterDecayKnobPos = filterAttackKnobPos.GetHShifted(70);
+    pGraphics->AttachControl(new IVKnobControl(
+      filterDecayKnobPos, EParams::filterDecay, "fltr decay"));
+
+    // filter sustain
+    auto filterSustainKnobPos = filterDecayKnobPos.GetHShifted(70);
+    pGraphics->AttachControl(new IVKnobControl(
+      filterSustainKnobPos, EParams::filterSustain, "fltr sustain"));
+
+    // filter release
+    auto filterReleaseKnobPos = filterSustainKnobPos.GetHShifted(70);
+    pGraphics->AttachControl(new IVKnobControl(
+      filterReleaseKnobPos, EParams::filterRelease, "fltr release"));
+
+    // filter envelope amount
+    auto filterEnvAmtKnobPos = filterReleaseKnobPos.GetHShifted(70);
+    pGraphics->AttachControl(new IVKnobControl(
+      filterEnvAmtKnobPos, EParams::filterEnvelopeAmount, "fltr env amt"));
   };
 #endif
 
@@ -114,6 +143,8 @@ void MegaSynth::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
     this->midiReceiver.advance();
     int velocity = this->midiReceiver.getLastVelocity();
     this->osciallator.setFrequency(this->midiReceiver.getLastFrequency());
+
+    this->filter.setCutoffMod(this->filterEnvelope.nextSample() * this->filterEnvelopeAmount);
     leftOutput[i] = this->filter.process(
       this->osciallator.nextSample() * this->envelopeGenerator.nextSample() * velocity / 127.0
     );
@@ -125,8 +156,10 @@ void MegaSynth::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
 }
 
 void MegaSynth::OnReset() {
-  this->osciallator.setSampleRate(GetSampleRate());
-  this->envelopeGenerator.setSampleRate(GetSampleRate());
+  auto sampleRate = GetSampleRate();
+  this->osciallator.setSampleRate(sampleRate);
+  this->envelopeGenerator.setSampleRate(sampleRate);
+  this->filterEnvelope.setSampleRate(sampleRate);
 }
 
 void MegaSynth::OnParamChange(int paramId) {
@@ -157,6 +190,25 @@ void MegaSynth::OnParamChange(int paramId) {
     break;
   case filterMode:
     this->filter.setFilterMode(static_cast<Filter::Mode>(GetParam(filterMode)->Int()));
+    break;
+  case filterAttack:
+    this->filterEnvelope.setStageValue(
+      EnvelopeGenerator::Stage::ATTACK, GetParam(paramId)->Value());
+    break;
+  case filterDecay:
+    this->filterEnvelope.setStageValue(
+      EnvelopeGenerator::Stage::DECAY, GetParam(paramId)->Value());
+    break;
+  case filterSustain:
+    this->filterEnvelope.setStageValue(
+      EnvelopeGenerator::Stage::SUSTAIN, GetParam(paramId)->Value());
+    break;
+  case filterRelease:
+    this->filterEnvelope.setStageValue(
+      EnvelopeGenerator::Stage::RELEASE, GetParam(paramId)->Value());
+    break;
+  case EParams::filterEnvelopeAmount:
+    this->filterEnvelopeAmount = GetParam(paramId)->Value();
     break;
   default:
     break;

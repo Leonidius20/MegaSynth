@@ -56,6 +56,7 @@ MegaSynth::MegaSynth(const InstanceInfo& info)
   mLayoutFunc = [&](IGraphics* pGraphics) {
     pGraphics->AttachCornerResizer(EUIResizerMode::Scale, false);
     pGraphics->AttachPanelBackground(iplug::igraphics::COLOR_GRAY);
+    // attach svg background
     pGraphics->LoadFont("Roboto-Regular", ROBOTO_FN);
     const IRECT b = pGraphics->GetBounds();
 
@@ -130,6 +131,10 @@ MegaSynth::MegaSynth(const InstanceInfo& info)
 
   this->envelopeGenerator.beganEnvelopeCycle.Connect(this, &MegaSynth::onBeganEnvelopeCycle);
   this->envelopeGenerator.finishedEnvelopeCycle.Connect(this, &MegaSynth::onFinishedEnvelopeCycle);
+
+  this->lfo.setWaveform(Oscillator::Waveform::TRIANGLE);
+  this->lfo.setFrequency(6.0);
+  this->lfo.setMuted(false);
 }
 
 #if IPLUG_DSP
@@ -142,9 +147,11 @@ void MegaSynth::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
   {
     this->midiReceiver.advance();
     int velocity = this->midiReceiver.getLastVelocity();
+    double lfoFilterModulation = this->lfo.nextSample() * this->lfoFilterModAmount;
+
     this->osciallator.setFrequency(this->midiReceiver.getLastFrequency());
 
-    this->filter.setCutoffMod(this->filterEnvelope.nextSample() * this->filterEnvelopeAmount);
+    this->filter.setCutoffMod((this->filterEnvelope.nextSample() * this->filterEnvelopeAmount) + lfoFilterModulation);
     leftOutput[i] = this->filter.process(
       this->osciallator.nextSample() * this->envelopeGenerator.nextSample() * velocity / 127.0
     );
@@ -160,6 +167,7 @@ void MegaSynth::OnReset() {
   this->osciallator.setSampleRate(sampleRate);
   this->envelopeGenerator.setSampleRate(sampleRate);
   this->filterEnvelope.setSampleRate(sampleRate);
+  this->lfo.setSampleRate(sampleRate);
 }
 
 void MegaSynth::OnParamChange(int paramId) {

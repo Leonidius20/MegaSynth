@@ -46,6 +46,9 @@ private:
   EnvelopeGenerator filterEnvelope;
   double filterEnvelopeAmount = 0.0;
 
+  Oscillator lfo;
+  double lfoFilterModAmount = 0.1;
+
 
   inline void onNoteOn(const int noteNumber, const int velocity) {
     this->envelopeGenerator.enterStage(EnvelopeGenerator::Stage::ATTACK);

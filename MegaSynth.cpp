@@ -28,7 +28,38 @@ using iplug::igraphics::MakeGraphics;
 MegaSynth::MegaSynth(const InstanceInfo& info)
 : Plugin(info, MakeConfig(kNumParams, kNumPresets))
 {
-  GetParam(EParams::waveform)->InitEnum("Waveform", Oscillator::Waveform::SINE, Oscillator::Waveform::kNumberOfWaveforms, "", 0, "", "Sine", "Saw", "Square", "Triangle");
+  createParams();
+
+#if IPLUG_EDITOR // http://bit.ly/2S64BDd
+  mMakeGraphicsFunc = [&]() {
+    return MakeGraphics(*this, PLUG_WIDTH, PLUG_HEIGHT, PLUG_FPS,
+      GetScaleForScreen(PLUG_WIDTH, PLUG_HEIGHT));
+  };
+  
+  mLayoutFunc = [&](IGraphics* pGraphics) {
+    createGraphics(pGraphics);
+  };
+#endif
+
+  this->midiReceiver.noteOn.Connect(this, &MegaSynth::onNoteOn);
+  this->midiReceiver.noteOff.Connect(this, &MegaSynth::onNoteOff);
+
+  this->envelopeGenerator.beganEnvelopeCycle.Connect(this, &MegaSynth::onBeganEnvelopeCycle);
+  this->envelopeGenerator.finishedEnvelopeCycle.Connect(this, &MegaSynth::onFinishedEnvelopeCycle);
+
+  this->lfo.setWaveform(Oscillator::Waveform::TRIANGLE);
+  this->lfo.setFrequency(6.0);
+  this->lfo.setMuted(false);
+}
+
+void MegaSynth::createParams() {
+  const double step = 0.001; // parameter regulation step
+
+  GetParam(EParams::osc1Waveform)->InitEnum("Osc 1 Waveform", Oscillator::Waveform::SINE, Oscillator::Waveform::kNumberOfWaveforms, "", 0, "", "Sine", "Saw", "Square", "Triangle");
+  GetParam(EParams::osc2Waveform)->InitEnum("Osc 2 Waveform", Oscillator::Waveform::SINE, Oscillator::Waveform::kNumberOfWaveforms, "", 0, "", "Sine", "Saw", "Square", "Triangle");
+  GetParam(EParams::osc1PitchMod)->InitDouble("Osc 1 Pitch Mod", 0.0, 0.0, 1.0, step);
+  GetParam(EParams::osc2PitchMod)->InitDouble("Osc 2 Pitch Mod", 0.0, 0.0, 1.0, step);
+  GetParam(EParams::osc2PitchMod)->InitDouble("Osc Mix", 0.5, 0.0, 1.0, step);
 
   GetParam(EParams::attack)->InitDouble("Attack", 0.01, 0.01, 10.0, 0.001, "s", 0, "", IParam::ShapePowCurve(3));
   GetParam(EParams::decay)->InitDouble("Decay", 0.5, 0.01, 15.0, 0.001, "s", 0, "", IParam::ShapePowCurve(3));
@@ -46,95 +77,120 @@ MegaSynth::MegaSynth(const InstanceInfo& info)
   GetParam(EParams::filterRelease)->InitDouble("Filter Release", 1.0, 0.001, 15.0, 0.001, "", 0, "", IParam::ShapePowCurve(3));
 
   GetParam(EParams::filterEnvelopeAmount)->InitDouble("Filter Env Amount", 0.0, -1.0, 1.0, 0.001);
+  GetParam(EParams::filterLfoAmount)->InitDouble("Filter LFO Amount", 0.0, 0.0, 1.0, step);
+
+  GetParam(EParams::lfoWaveform)->InitEnum("LFO Waveform", Oscillator::Waveform::TRIANGLE, Oscillator::Waveform::kNumberOfWaveforms, "", 0, "", "Sine", "Saw", "Square", "Triangle");
+  GetParam(EParams::lfoRate)->InitDouble("LFO Rate", 6.0, 0.01, 30.0, step, "Hz");
+}
+
+void MegaSynth::createGraphics(IGraphics* pGraphics) {
+  pGraphics->AttachCornerResizer(EUIResizerMode::Scale, false);
+  pGraphics->AttachSVGBackground(BACKGROUND_FN);
+
+  pGraphics->LoadFont("Roboto-Regular", ROBOTO_FN);
+  const IRECT b = pGraphics->GetBounds();
+
+  this->virtualKeyboard = new IVKeyboardControl(b.GetFromBottom(75), this->virtualKeyboardMinimumNoteNumber, this->virtualKeyboardMinimumNoteNumber + 5 * 12);
+  pGraphics->AttachControl(this->virtualKeyboard);
+
+  // waveform control & its label
+  auto waveformsBitmap = pGraphics->LoadBitmap(WAVEFORMS_FN, 4);
+  auto* waveformSwitch = new IBSwitchControl(28, 53, waveformsBitmap, EParams::osc1Waveform);
+  pGraphics->AttachControl(waveformSwitch);
+
+  auto knobStyle = IVStyle::IVStyle(false, false);
+
+  // osc 1 pitch mod knob
+  auto osc1PitchModKnobRect = waveformSwitch->GetRECT().GetHShifted(53).GetScaledAboutCentre(1.5);
+  auto* osc1PitchModKnob = new IVKnobControl(osc1PitchModKnobRect, 
+      EParams::osc1PitchMod, " ", knobStyle);
+  pGraphics->AttachControl(osc1PitchModKnob);
+
+  // osc mix knob
+  auto oscMixKnobRect = osc1PitchModKnobRect.GetHShifted(53);
+  auto* oscMixKnob = new IVKnobControl(oscMixKnobRect, 
+      EParams::oscMix, " ", knobStyle);
+  pGraphics->AttachControl(oscMixKnob);
+
+  // osc2 pitch mod knob
+  auto osc2PitchKnobRect = oscMixKnobRect.GetHShifted(53);
+  auto *osc2PitchKnob = new IVKnobControl(osc2PitchKnobRect, 
+      EParams::osc2PitchMod, " ", knobStyle);
+  pGraphics->AttachControl(osc2PitchKnob);
+
+  // osc 2 waveform
+  auto osc2WaveformSwitchRect = osc2PitchKnobRect.GetHShifted(53).GetScaledAboutCentre(1.0 / 1.5);
+  auto* osc2WaveformSwitch = new IBSwitchControl(osc2WaveformSwitchRect,
+      waveformsBitmap, EParams::osc2Waveform);
+  pGraphics->AttachControl(osc2WaveformSwitch);
+
+  // attack knob & its label
+  auto attackKnobPos = waveformSwitch->GetRECT().GetHShifted(290).GetScaledAboutCentre(1.5);
+  auto* attackKnob = new IVKnobControl(attackKnobPos, EParams::attack, " ", knobStyle);
+  pGraphics->AttachControl(attackKnob);
+
+  // decay
+  auto decayKnobRect = attackKnobPos.GetHShifted(60);
+  auto* decayKnob = new IVKnobControl(decayKnobRect, EParams::decay, " ", knobStyle);
+  pGraphics->AttachControl(decayKnob);
+
+  // sustian
+  auto sustainKnobRect = decayKnobRect.GetHShifted(60);
+  auto* sustainKnob = new IVKnobControl(sustainKnobRect, EParams::sustain, " ", knobStyle);
+  pGraphics->AttachControl(sustainKnob);
+
+  // release
+  auto* releaseKnob = new IVKnobControl(sustainKnobRect.GetHShifted(60), EParams::release, " ", knobStyle);
+  pGraphics->AttachControl(releaseKnob);
+
+  // filter mode & its label
+  auto filterModesBitmap = pGraphics->LoadBitmap(FILTER_MODES_FN, 3);
+  auto* filterModeSwitch = new IBSwitchControl(28, 178, filterModesBitmap, EParams::filterMode);
+  pGraphics->AttachControl(filterModeSwitch);
+
+  // cutoff
+  auto cutoffKnobRect = filterModeSwitch->GetRECT().GetHShifted(53).GetScaledAboutCentre(1.5);
+  auto* cutoffKnob = new IVKnobControl(cutoffKnobRect, EParams::filterCutoff, "cutoff", knobStyle);
+  pGraphics->AttachControl(cutoffKnob);
+
+  // resonance
+  auto resonanceKnobRect = cutoffKnobRect.GetHShifted(53);
+  auto* resonanceKnob = new IVKnobControl(resonanceKnobRect, EParams::filterResonance, "resonance", knobStyle);
+  pGraphics->AttachControl(resonanceKnob);
+
+  // filter lfo amount
+  auto filterLfoAmtKnobRect = resonanceKnobRect.GetHShifted(53);
+  pGraphics->AttachControl(new IVKnobControl(filterLfoAmtKnobRect, 
+      EParams::filterLfoAmount, "fltr lfo amt", knobStyle));
+
+  // filter attack
+  auto filterAttackKnobRect = attackKnobPos.GetVShifted(125);
+  pGraphics->AttachControl(new IVKnobControl(filterAttackKnobRect, EParams::filterAttack, "fltr attack", knobStyle));
+
+  // filter decay
+  auto filterDecayKnobPos = filterAttackKnobRect.GetHShifted(60);
+  pGraphics->AttachControl(new IVKnobControl(filterDecayKnobPos, EParams::filterDecay, "fltr decay", knobStyle));
+
+  // filter sustain
+  auto filterSustainKnobPos = filterDecayKnobPos.GetHShifted(60);
+  pGraphics->AttachControl(new IVKnobControl(filterSustainKnobPos, EParams::filterSustain, "fltr sustain", knobStyle));
+
+  // filter release
+  auto filterReleaseKnobPos = filterSustainKnobPos.GetHShifted(60);
+  pGraphics->AttachControl(new IVKnobControl(filterReleaseKnobPos, EParams::filterRelease, "fltr release", knobStyle));
+
+  // filter envelope amount
+  auto filterEnvAmtKnobPos = filterLfoAmtKnobRect.GetHShifted(53);
+  pGraphics->AttachControl(new IVKnobControl(filterEnvAmtKnobPos, EParams::filterEnvelopeAmount, "fltr env amt", knobStyle));
+
+  // lfo waveform switch
+  auto* lfoWaveSwitch = new IBSwitchControl(28, 300, waveformsBitmap, EParams::lfoWaveform);
+  pGraphics->AttachControl(lfoWaveSwitch);
   
-
-#if IPLUG_EDITOR // http://bit.ly/2S64BDd
-  mMakeGraphicsFunc = [&]() {
-    return MakeGraphics(*this, PLUG_WIDTH, PLUG_HEIGHT, PLUG_FPS, GetScaleForScreen(PLUG_WIDTH, PLUG_HEIGHT));
-  };
-  
-  mLayoutFunc = [&](IGraphics* pGraphics) {
-    pGraphics->AttachCornerResizer(EUIResizerMode::Scale, false);
-    pGraphics->AttachPanelBackground(iplug::igraphics::COLOR_GRAY);
-    // attach svg background
-    pGraphics->LoadFont("Roboto-Regular", ROBOTO_FN);
-    const IRECT b = pGraphics->GetBounds();
-
-    this->virtualKeyboard = new IVKeyboardControl(b.GetFromBottom(75), this->virtualKeyboardMinimumNoteNumber, this->virtualKeyboardMinimumNoteNumber + 5 * 12);
-    pGraphics->AttachControl(this->virtualKeyboard);
-
-    // waveform control & its label
-    auto waveformsBitmap = pGraphics->LoadBitmap(WAVEFORMS_FN, 4);
-    auto* waveformSwitch = new IBSwitchControl(24, 53, waveformsBitmap, EParams::waveform);
-    pGraphics->AttachControl(waveformSwitch);
-    pGraphics->AttachControl(new ITextControl(b.GetFromTop(70).GetFromLeft(100), "waveform", IText(18)));
-
-    // attack knob & its label
-    auto* attackKnob = new IVKnobControl(waveformSwitch->GetRECT().GetHShifted(70).GetScaledAboutCentre(3), EParams::attack, "attack");
-    pGraphics->AttachControl(attackKnob);
-
-    // decay
-    auto* decayKnob = new IVKnobControl(attackKnob->GetRECT().GetHShifted(70), EParams::decay, "decay");
-    pGraphics->AttachControl(decayKnob);
-
-    // sustian
-    auto* sustainKnob = new IVKnobControl(decayKnob->GetRECT().GetHShifted(70), EParams::sustain, "sustain");
-    pGraphics->AttachControl(sustainKnob);
-
-    // release
-    auto* releaseKnob = new IVKnobControl(sustainKnob->GetRECT().GetHShifted(70), EParams::release, "release");
-    pGraphics->AttachControl(releaseKnob);
-
-    // filter mode & its label
-    auto filterModesBitmap = pGraphics->LoadBitmap(FILTER_MODES_FN, 3);
-    auto* filterModeSwitch = new IBSwitchControl(24, 143, filterModesBitmap, EParams::filterMode);
-    pGraphics->AttachControl(filterModeSwitch);
-    pGraphics->AttachControl(new ITextControl(b.GetFromTop(250).GetFromLeft(100), "filter type", IText(18)));
-
-    // cutoff
-    auto* cutoffKnob = new IVKnobControl(filterModeSwitch->GetRECT().GetHShifted(70).GetScaledAboutCentre(3), EParams::filterCutoff, "cutoff");
-    pGraphics->AttachControl(cutoffKnob);
-
-    // resonance
-    auto* resonanceKnob = new IVKnobControl(cutoffKnob->GetRECT().GetHShifted(70), EParams::filterResonance, "resonance");
-    pGraphics->AttachControl(resonanceKnob);
-
-    // filter attack
-    auto filterAttackKnobPos = resonanceKnob->GetRECT().GetHShifted(70);
-    pGraphics->AttachControl(new IVKnobControl(
-      filterAttackKnobPos, EParams::filterAttack, "fltr attack"));
-
-    // filter decay
-    auto filterDecayKnobPos = filterAttackKnobPos.GetHShifted(70);
-    pGraphics->AttachControl(new IVKnobControl(
-      filterDecayKnobPos, EParams::filterDecay, "fltr decay"));
-
-    // filter sustain
-    auto filterSustainKnobPos = filterDecayKnobPos.GetHShifted(70);
-    pGraphics->AttachControl(new IVKnobControl(
-      filterSustainKnobPos, EParams::filterSustain, "fltr sustain"));
-
-    // filter release
-    auto filterReleaseKnobPos = filterSustainKnobPos.GetHShifted(70);
-    pGraphics->AttachControl(new IVKnobControl(
-      filterReleaseKnobPos, EParams::filterRelease, "fltr release"));
-
-    // filter envelope amount
-    auto filterEnvAmtKnobPos = filterReleaseKnobPos.GetHShifted(70);
-    pGraphics->AttachControl(new IVKnobControl(
-      filterEnvAmtKnobPos, EParams::filterEnvelopeAmount, "fltr env amt"));
-  };
-#endif
-
-  this->midiReceiver.noteOn.Connect(this, &MegaSynth::onNoteOn);
-  this->midiReceiver.noteOff.Connect(this, &MegaSynth::onNoteOff);
-
-  this->envelopeGenerator.beganEnvelopeCycle.Connect(this, &MegaSynth::onBeganEnvelopeCycle);
-  this->envelopeGenerator.finishedEnvelopeCycle.Connect(this, &MegaSynth::onFinishedEnvelopeCycle);
-
-  this->lfo.setWaveform(Oscillator::Waveform::TRIANGLE);
-  this->lfo.setFrequency(6.0);
-  this->lfo.setMuted(false);
+  // lfo rate knob
+  auto lfoRateKnobPos = lfoWaveSwitch->GetRECT().GetHShifted(60).GetScaledAboutCentre(1.5);
+  pGraphics->AttachControl(new IVKnobControl(lfoRateKnobPos, 
+      EParams::lfoRate, "LFO Rate", knobStyle));
 }
 
 #if IPLUG_DSP
@@ -173,7 +229,7 @@ void MegaSynth::OnReset() {
 void MegaSynth::OnParamChange(int paramId) {
   // MUTEX LOCK?
 
-  using EParams::waveform;
+  using EParams::osc1Waveform;
   using EParams::attack;
   using EParams::decay;
   using EParams::sustain;
@@ -181,8 +237,8 @@ void MegaSynth::OnParamChange(int paramId) {
 
   switch (paramId)
   {
-  case waveform:
-    this->osciallator.setWaveform(static_cast<Oscillator::Waveform>(GetParam(waveform)->Int()));
+  case osc1Waveform:
+    this->osciallator.setWaveform(static_cast<Oscillator::Waveform>(GetParam(osc1Waveform)->Int()));
     break;
   case attack:
   case decay:

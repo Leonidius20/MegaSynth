@@ -30,8 +30,8 @@
 #define PLUG_DOES_MPE 0
 #define PLUG_DOES_STATE_CHUNKS 0
 #define PLUG_HAS_UI 1
-#define PLUG_WIDTH 600
-#define PLUG_HEIGHT 350
+#define PLUG_WIDTH 571
+#define PLUG_HEIGHT 458
 #define PLUG_FPS 60
 #define PLUG_SHARED_RESOURCES 0
 #define PLUG_HOST_RESIZE 0
@@ -61,3 +61,4 @@
 
 #define WAVEFORMS_FN "waveform.png"
 #define FILTER_MODES_FN "filtermode.png"
+#define BACKGROUND_FN "background.svg"

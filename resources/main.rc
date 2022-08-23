@@ -13,22 +13,6 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Ukrainian (Ukraine) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_UKR)
-LANGUAGE LANG_UKRAINIAN, SUBLANG_DEFAULT
-#pragma code_page(1251)
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// PNG
-//
-
-#endif    // Ukrainian (Ukraine) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
 // English (United Kingdom) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
@@ -167,7 +151,8 @@ BEGIN
     "#include ""..\\config.h""\r\n"
     "ROBOTO_FN TTF ROBOTO_FN\r\n"
     "WAVEFORMS_FN PNG WAVEFORMS_FN\r\n"
-    "FILTER_MODES_FN PNG FILTER_MODES_FN\0"
+    "FILTER_MODES_FN PNG FILTER_MODES_FN\r\n"
+    "BACKGROUND_FN SVG BACKGROUND_FN \0"
 END
 
 #endif    // APSTUDIO_INVOKED
@@ -250,6 +235,7 @@ END
 ROBOTO_FN TTF ROBOTO_FN
 WAVEFORMS_FN PNG WAVEFORMS_FN
 FILTER_MODES_FN PNG FILTER_MODES_FN
+BACKGROUND_FN SVG BACKGROUND_FN 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

@@ -142,6 +142,10 @@
     <ClCompile Include="..\Filter.cpp" />
     <ClCompile Include="..\Oscillator.ixx" />
     <ClCompile Include="..\MIDIReceiver.ixx" />
+    <ClCompile Include="..\Voice.cpp" />
+    <ClCompile Include="..\Voice.ixx" />
+    <ClCompile Include="..\VoiceManager.cpp" />
+    <ClCompile Include="..\VoiceManager.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../config.h" />

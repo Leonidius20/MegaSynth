@@ -10,6 +10,7 @@ using std::sin;
 using std::fabs;
 
 const double Oscillator::twoPi = 2 * pi;
+double Oscillator::sampleRate = 44100.0;
 
 void Oscillator::setFrequency(double frequency) {
   this->frequency = frequency;
@@ -91,8 +92,6 @@ void Oscillator::generate(double* buffer, int numFrames) {
 
 double Oscillator::nextSample() {
   double value = 0.0;
-  if (isMuted)
-    return value;
 
   switch (this->waveform)
   {

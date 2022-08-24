@@ -33,6 +33,9 @@ public:
 
   inline void setFilterMode(Mode mode) { this->mode = mode; }
 
+  void reset() {
+    buf1 = buf2 = buf3 = buf0 = 0.0;
+  }
 
 private:
   double cutoff = 0.99;

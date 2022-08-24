@@ -87,11 +87,11 @@ private:
   }
 
   inline void onBeganEnvelopeCycle() {
-    this->osciallator.setMuted(false);
+    //this->osciallator.setMuted(false);
   }
 
   inline void onFinishedEnvelopeCycle() {
-    this->osciallator.setMuted(true);
+    //this->osciallator.setMuted(true);
   }
 
   void createParams();

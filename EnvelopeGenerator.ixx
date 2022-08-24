@@ -20,9 +20,11 @@ public:
 
   void enterStage(Stage stage);
   double nextSample();
-  void setSampleRate(double newSampleRate);
+  static void setSampleRate(double newSampleRate);
   void setStageValue(Stage stage, double value);
   inline Stage getCurrentStage() const { return currentStage; }
+  void reset();
+
   const double minimumLevel = 0.0001;
 
   Gallant::Signal0<> beganEnvelopeCycle;
@@ -32,7 +34,7 @@ private:
   Stage currentStage = Stage::OFF;
   double currentLevel = minimumLevel;
   double multiplier = 1.0;
-  double sampleRate = 44100.0;
+  static double sampleRate;
   double stageValues[Stage::numStages] = {0.0, 0.01, 0.5, 0.1, 1.0}; // off, A, D, S, R
   void calculateMultiplier(double startLevel, double endLevel, unsigned long long lengthInSamples);
   unsigned long long currentSampleIndex = 0;

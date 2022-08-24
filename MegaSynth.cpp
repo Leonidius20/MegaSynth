@@ -49,7 +49,7 @@ MegaSynth::MegaSynth(const InstanceInfo& info)
 
   this->lfo.setWaveform(Oscillator::Waveform::TRIANGLE);
   this->lfo.setFrequency(6.0);
-  this->lfo.setMuted(false);
+  // this->lfo.setMuted(false);
 }
 
 void MegaSynth::createParams() {

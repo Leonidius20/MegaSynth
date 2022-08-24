@@ -260,6 +260,10 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Voice.cpp" />
+    <ClCompile Include="..\Voice.ixx" />
+    <ClCompile Include="..\VoiceManager.cpp" />
+    <ClCompile Include="..\VoiceManager.ixx" />
     <ClInclude Include="../config.h" />
     <ClInclude Include="..\..\..\Dependencies\IPlug\VST3_SDK\base\source\classfactoryhelpers.h" />
     <ClInclude Include="..\..\..\Dependencies\IPlug\VST3_SDK\base\source\fbuffer.h" />

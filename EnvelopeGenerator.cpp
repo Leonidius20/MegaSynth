@@ -7,6 +7,8 @@ module megasynth.envelope_generator;
 using std::log;
 using std::fmax;
 
+double EnvelopeGenerator::sampleRate = 44100.0;
+
 double EnvelopeGenerator::nextSample() {
   if (this->currentStage != EnvelopeGenerator::Stage::OFF && this->currentStage != EnvelopeGenerator::Stage::SUSTAIN)
   {
@@ -77,7 +79,7 @@ void EnvelopeGenerator::enterStage(EnvelopeGenerator::Stage newStage) {
   }
 }
 
-void EnvelopeGenerator::setSampleRate(double sampleRate) { this->sampleRate = sampleRate; }
+void EnvelopeGenerator::setSampleRate(double sampleRate) { EnvelopeGenerator::sampleRate = sampleRate; }
 
 void EnvelopeGenerator::setStageValue(EnvelopeGenerator::Stage stage, double value) {
   this->stageValues[stage] = value;
@@ -121,4 +123,12 @@ void EnvelopeGenerator::setStageValue(EnvelopeGenerator::Stage stage, double val
     unsigned long long samplesUntilNextStage = this->nextStageSampleIndex - this->currentSampleIndex;
     this->calculateMultiplier(this->currentLevel, fmax(this->stageValues[EnvelopeGenerator::Stage::SUSTAIN], this->minimumLevel), samplesUntilNextStage);
   }
+}
+
+void EnvelopeGenerator::reset() {
+    currentStage = Stage::OFF;
+    currentLevel = minimumLevel;
+    multiplier = 1.0;
+    currentSampleIndex = 0;
+    nextStageSampleIndex = 0;
 }

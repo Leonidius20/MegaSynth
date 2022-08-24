@@ -379,6 +379,10 @@
     <ClCompile Include="..\MIDIReceiver.ixx" />
     <ClCompile Include="..\Oscillator.cpp" />
     <ClCompile Include="..\Oscillator.ixx" />
+    <ClCompile Include="..\Voice.cpp" />
+    <ClCompile Include="..\Voice.ixx" />
+    <ClCompile Include="..\VoiceManager.cpp" />
+    <ClCompile Include="..\VoiceManager.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\resources\main.rc" />

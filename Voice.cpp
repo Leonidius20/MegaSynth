@@ -14,6 +14,9 @@ double Voice::nextSample() {
 	filter.setCutoffMod(filterEnvValue * filterEnvAmt 
 		+ lfoValue * filterLfoAmt);
 
+	osc1.setPitchMod(lfoValue * osc1PitchLfoAmt);
+	osc2.setPitchMod(lfoValue * osc2PitchLfoAmt);
+
 	return filter.process(oscSum * volumeEnvValue * midiVelocity / 127.0);
 }
 

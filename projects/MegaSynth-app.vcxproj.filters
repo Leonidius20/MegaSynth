@@ -89,6 +89,7 @@
     <ClCompile Include="..\Voice.cpp" />
     <ClCompile Include="..\VoiceManager.ixx" />
     <ClCompile Include="..\VoiceManager.cpp" />
+    <ClCompile Include="..\PolyBlepOscillator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\MegaSynth.h" />

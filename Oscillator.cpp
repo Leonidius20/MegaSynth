@@ -8,8 +8,10 @@ module megasynth.oscillator;
 using std::numbers::pi;
 using std::sin;
 using std::fabs;
+using std::pow;
+using std::fmin;
+using std::fmax;
 
-const double Oscillator::twoPi = 2 * pi;
 double Oscillator::sampleRate = 44100.0;
 
 void Oscillator::setFrequency(double frequency) {
@@ -23,11 +25,25 @@ void Oscillator::setSampleRate(double sampleRate)
   this->updateIncrement();
 }
 
-void Oscillator::updateIncrement() {
-  this->phaseIncrement = this->frequency * 2 * pi / this->sampleRate;
+void Oscillator::setPitchMod(double amount) {
+    this->pitchMod = amount;
+    updateIncrement();
 }
 
-void Oscillator::generate(double* buffer, int numFrames) {
+void Oscillator::updateIncrement() {
+  double pitchModAsFrequency = pow(2.0, fabs(pitchMod) * 14.0) - 1;
+  if (pitchMod < 0) 
+      pitchModAsFrequency = -pitchModAsFrequency;
+
+  double nyquistFreq = this->sampleRate / 2.0;
+
+  double calculatedFreq = fmin(fmax(frequency + pitchModAsFrequency, 0), nyquistFreq);
+
+
+  this->phaseIncrement = calculatedFreq * twoPi / this->sampleRate;
+}
+
+/*void Oscillator::generate(double* buffer, int numFrames) {
   
 
   switch (this->waveform)
@@ -88,36 +104,10 @@ void Oscillator::generate(double* buffer, int numFrames) {
     break;
   }
 
-}
+}*/
 
 double Oscillator::nextSample() {
-  double value = 0.0;
-
-  switch (this->waveform)
-  {
-  case Waveform::SINE:
-    value = sin(this->phase);
-    break;
-  case Waveform::SAW:
-    value = 1.0 - (2.0 * this->phase / twoPi);
-    break;
-  case Waveform::SQUARE:
-    if (this->phase <= pi)
-    {
-      value = 1.0;
-    }
-    else
-    {
-      value = -1.0;
-    }
-    break;
-  case Waveform::TRIANGLE:
-    value = -1.0 + (2.0 * this->phase / twoPi);
-    value = 2.0 * (fabs(value) - 0.5);
-    break;
-  default:
-    break;
-  }
+  double value = this->naiveWaveform(this->waveform);
 
   this->phase += this->phaseIncrement;
   while (this->phase >= twoPi)
@@ -126,4 +116,34 @@ double Oscillator::nextSample() {
   }
 
   return value;
+}
+
+double Oscillator::naiveWaveform(Oscillator::Waveform wave) {
+    double value = 0.0;
+
+    switch (wave)
+    {
+    case Waveform::SINE:
+        value = sin(this->phase);
+        break;
+    case Waveform::SAW:
+        value = (2.0 * this->phase / twoPi) - 1.0;
+        break;
+    case Waveform::SQUARE:
+        if (this->phase <= pi) {
+            value = 1.0;
+        }
+        else {
+            value = -1.0;
+        }
+        break;
+    case Waveform::TRIANGLE:
+        value = -1.0 + (2.0 * this->phase / twoPi);
+        value = 2.0 * (fabs(value) - 0.5);
+        break;
+    default:
+        break;
+    }
+
+    return value;
 }

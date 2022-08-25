@@ -7,7 +7,11 @@
 // #include "Oscillator.h"
 // #include "MIDIReceiver.h"
 
-#include <algorithm>;
+#include <algorithm>
+#include <functional>
+
+import megasynth.oscillator;
+import megasynth.voice_manager;
 
 using std::copy;
 
@@ -41,15 +45,8 @@ MegaSynth::MegaSynth(const InstanceInfo& info)
   };
 #endif
 
-  this->midiReceiver.noteOn.Connect(this, &MegaSynth::onNoteOn);
-  this->midiReceiver.noteOff.Connect(this, &MegaSynth::onNoteOff);
-
-  this->envelopeGenerator.beganEnvelopeCycle.Connect(this, &MegaSynth::onBeganEnvelopeCycle);
-  this->envelopeGenerator.finishedEnvelopeCycle.Connect(this, &MegaSynth::onFinishedEnvelopeCycle);
-
-  this->lfo.setWaveform(Oscillator::Waveform::TRIANGLE);
-  this->lfo.setFrequency(6.0);
-  // this->lfo.setMuted(false);
+  this->midiReceiver.noteOn.Connect(&this->voiceManager, &VoiceManager::onNoteOn);
+  this->midiReceiver.noteOff.Connect(&this->voiceManager, &VoiceManager::onNoteOff);
 }
 
 void MegaSynth::createParams() {
@@ -59,7 +56,7 @@ void MegaSynth::createParams() {
   GetParam(EParams::osc2Waveform)->InitEnum("Osc 2 Waveform", Oscillator::Waveform::SINE, Oscillator::Waveform::kNumberOfWaveforms, "", 0, "", "Sine", "Saw", "Square", "Triangle");
   GetParam(EParams::osc1PitchMod)->InitDouble("Osc 1 Pitch Mod", 0.0, 0.0, 1.0, step);
   GetParam(EParams::osc2PitchMod)->InitDouble("Osc 2 Pitch Mod", 0.0, 0.0, 1.0, step);
-  GetParam(EParams::osc2PitchMod)->InitDouble("Osc Mix", 0.5, 0.0, 1.0, step);
+  GetParam(EParams::oscMix)->InitDouble("Osc Mix", 0.5, 0.0, 1.0, step);
 
   GetParam(EParams::attack)->InitDouble("Attack", 0.01, 0.01, 10.0, 0.001, "s", 0, "", IParam::ShapePowCurve(3));
   GetParam(EParams::decay)->InitDouble("Decay", 0.5, 0.01, 15.0, 0.001, "s", 0, "", IParam::ShapePowCurve(3));
@@ -202,15 +199,7 @@ void MegaSynth::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
   for (int i = 0; i < nFrames; i++)
   {
     this->midiReceiver.advance();
-    int velocity = this->midiReceiver.getLastVelocity();
-    double lfoFilterModulation = this->lfo.nextSample() * this->lfoFilterModAmount;
-
-    this->osciallator.setFrequency(this->midiReceiver.getLastFrequency());
-
-    this->filter.setCutoffMod((this->filterEnvelope.nextSample() * this->filterEnvelopeAmount) + lfoFilterModulation);
-    leftOutput[i] = this->filter.process(
-      this->osciallator.nextSample() * this->envelopeGenerator.nextSample() * velocity / 127.0
-    );
+    leftOutput[i] = this->voiceManager.nextSample();
   }
 
   copy(leftOutput, leftOutput + nFrames, rightOutput);
@@ -220,10 +209,7 @@ void MegaSynth::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
 
 void MegaSynth::OnReset() {
   auto sampleRate = GetSampleRate();
-  this->osciallator.setSampleRate(sampleRate);
-  this->envelopeGenerator.setSampleRate(sampleRate);
-  this->filterEnvelope.setSampleRate(sampleRate);
-  this->lfo.setSampleRate(sampleRate);
+  this->voiceManager.setSampleRate(sampleRate);
 }
 
 void MegaSynth::OnParamChange(int paramId) {
@@ -235,52 +221,106 @@ void MegaSynth::OnParamChange(int paramId) {
   using EParams::sustain;
   using EParams::release;
 
-  switch (paramId)
-  {
-  case osc1Waveform:
-    this->osciallator.setWaveform(static_cast<Oscillator::Waveform>(GetParam(osc1Waveform)->Int()));
-    break;
-  case attack:
-  case decay:
-  case sustain:
-  case release:
-    this->envelopeGenerator.setStageValue(static_cast<EnvelopeGenerator::Stage>(paramId), GetParam(paramId)->Value());
-    break;
-  case filterCutoff:
-    this->filter.setCutoff(GetParam(filterCutoff)->Value());
-    break;
-  case filterResonance:
-    this->filter.setResonance(GetParam(filterResonance)->Value());
-    break;
-  case filterMode:
-    this->filter.setFilterMode(static_cast<Filter::Mode>(GetParam(filterMode)->Int()));
-    break;
-  case filterAttack:
-    this->filterEnvelope.setStageValue(
-      EnvelopeGenerator::Stage::ATTACK, GetParam(paramId)->Value());
-    break;
-  case filterDecay:
-    this->filterEnvelope.setStageValue(
-      EnvelopeGenerator::Stage::DECAY, GetParam(paramId)->Value());
-    break;
-  case filterSustain:
-    this->filterEnvelope.setStageValue(
-      EnvelopeGenerator::Stage::SUSTAIN, GetParam(paramId)->Value());
-    break;
-  case filterRelease:
-    this->filterEnvelope.setStageValue(
-      EnvelopeGenerator::Stage::RELEASE, GetParam(paramId)->Value());
-    break;
-  case EParams::filterEnvelopeAmount:
-    this->filterEnvelopeAmount = GetParam(paramId)->Value();
-    break;
-  default:
-    break;
+  auto *param = GetParam(paramId);
+
+  if (paramId == EParams::lfoWaveform) {
+      this->voiceManager.setLfoWaveform(static_cast<Oscillator::Waveform>(param->Int()));
+  } else if (paramId == EParams::lfoRate) {
+      this->voiceManager.setLfoRate(param->Value());
+  } else {
+      using std::placeholders::_1;
+      using std::bind;
+      
+      VoiceManager::VoiceChangerFunction changer;
+
+      switch (paramId)
+      {
+      case osc1Waveform:
+          changer = bind(&VoiceManager::setOscWaveform, 
+              _1, 1, static_cast<Oscillator::Waveform>(param->Int()));
+          break;
+      case osc2Waveform:
+          changer = bind(&VoiceManager::setOscWaveform, 
+              _1, 2, static_cast<Oscillator::Waveform>(param->Int()));
+          break;
+      case osc1PitchMod:
+          changer = bind(&VoiceManager::setOscPitchLfoAmt, 
+              _1, 1, param->Value());
+          break;
+      case osc2PitchMod:
+          changer = bind(&VoiceManager::setOscPitchLfoAmt, 
+              _1, 2, param->Value());
+          break;
+      case oscMix:
+          changer = bind(&VoiceManager::setOscMix, 
+              _1, param->Value());
+          break;
+
+      case attack:
+          changer = bind(&VoiceManager::setVolumeEnvStageValue, 
+              _1, EnvelopeGenerator::Stage::ATTACK, param->Value());
+          break;
+      case decay:
+          changer = bind(&VoiceManager::setVolumeEnvStageValue, 
+              _1, EnvelopeGenerator::Stage::DECAY, param->Value());
+          break;
+      case sustain:
+          changer = bind(&VoiceManager::setVolumeEnvStageValue, 
+              _1, EnvelopeGenerator::Stage::SUSTAIN, param->Value());
+          break;
+      case release:
+          changer = bind(&VoiceManager::setVolumeEnvStageValue, 
+              _1, EnvelopeGenerator::Stage::RELEASE, param->Value());
+          break;
+
+      case filterCutoff:
+          changer = bind(&VoiceManager::setFilterCutoff, 
+              _1, param->Value());
+          break;
+      case filterResonance:
+          changer = bind(&VoiceManager::setFilterResonance, 
+              _1, param->Value());
+          break;
+      case filterMode:
+          changer = bind(&VoiceManager::setFilterMode, 
+              _1, static_cast<Filter::Mode>(param->Int()));
+          break;
+
+      case filterAttack:
+          changer = bind(&VoiceManager::setFilterEnvStageValue, 
+              _1, EnvelopeGenerator::Stage::ATTACK, param->Value());
+          break;
+      case filterDecay:
+          changer = bind(&VoiceManager::setFilterEnvStageValue, 
+              _1, EnvelopeGenerator::Stage::DECAY, param->Value());
+          break;
+      case filterSustain:
+          changer = bind(&VoiceManager::setFilterEnvStageValue, 
+              _1, EnvelopeGenerator::Stage::SUSTAIN, param->Value());
+          break;
+      case filterRelease:
+          changer = bind(&VoiceManager::setFilterEnvStageValue, 
+              _1, EnvelopeGenerator::Stage::RELEASE, param->Value());
+          break;
+      case EParams::filterEnvelopeAmount:
+          changer = bind(&VoiceManager::setFilterEnvAmount, 
+              _1, param->Value());
+          break;
+      case EParams::filterLfoAmount:
+          changer = bind(&VoiceManager::setFilterLFOAmount, 
+              _1, param->Value());
+          break;
+
+      default:
+          return; // do not call changeAllVoices()
+      }
+
+      this->voiceManager.changeAllVoices(changer);
   }
+
 }
 
 void MegaSynth::ProcessMidiMsg(const IMidiMsg& msg) {
   this->midiReceiver.onMessageReceived(msg);
-  // this->virtualKeyboard->SetDirty();                  // to display the MIDI note as pressed/unpressed
 }
 #endif

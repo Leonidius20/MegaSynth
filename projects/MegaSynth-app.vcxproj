@@ -379,6 +379,7 @@
     <ClCompile Include="..\MIDIReceiver.ixx" />
     <ClCompile Include="..\Oscillator.cpp" />
     <ClCompile Include="..\Oscillator.ixx" />
+    <ClCompile Include="..\PolyBlepOscillator.cpp" />
     <ClCompile Include="..\Voice.cpp" />
     <ClCompile Include="..\Voice.ixx" />
     <ClCompile Include="..\VoiceManager.cpp" />

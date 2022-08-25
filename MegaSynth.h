@@ -3,10 +3,8 @@
 #include "IPlug_include_in_plug_hdr.h"
 #include "IPlugMidi.h"
 
-import megasynth.oscillator;
 import megasynth.midi_receiver;
-import megasynth.envelope_generator;
-import megasynth.filter;
+import megasynth.voice_manager;
 
 const int kNumPresets = 1;
 
@@ -64,35 +62,8 @@ using namespace igraphics;
 class MegaSynth final : public iplug::Plugin
 {
 private:
-  Oscillator osciallator;
   MIDIReceiver midiReceiver;
-  EnvelopeGenerator envelopeGenerator;
-
-  Filter filter;
-  EnvelopeGenerator filterEnvelope;
-  double filterEnvelopeAmount = 0.0;
-
-  Oscillator lfo;
-  double lfoFilterModAmount = 0.1;
-
-
-  inline void onNoteOn(const int noteNumber, const int velocity) {
-    this->envelopeGenerator.enterStage(EnvelopeGenerator::Stage::ATTACK);
-    this->filterEnvelope.enterStage(EnvelopeGenerator::Stage::ATTACK);
-  }
-
-  inline void onNoteOff(const int noteNumber, const int velocity) {
-    this->envelopeGenerator.enterStage(EnvelopeGenerator::Stage::RELEASE);
-    this->filterEnvelope.enterStage(EnvelopeGenerator::Stage::RELEASE);
-  }
-
-  inline void onBeganEnvelopeCycle() {
-    //this->osciallator.setMuted(false);
-  }
-
-  inline void onFinishedEnvelopeCycle() {
-    //this->osciallator.setMuted(true);
-  }
+  VoiceManager voiceManager;
 
   void createParams();
   void createGraphics(IGraphics* pGraphics);

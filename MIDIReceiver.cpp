@@ -14,10 +14,6 @@ MIDIReceiver::MIDIReceiver() {
   fill(this->keyStatus, this->keyStatus + this->keyCount, false);
 }
 
-double MIDIReceiver::noteNumberToFrequency(int noteNumber) {
-  return 440.0 * pow(2.0, (noteNumber - 69.0) / 12.0);
-}
-
 void MIDIReceiver::flush(int numFrames) {
   this->queue.Flush(numFrames);
   this->offset = 0;
@@ -46,30 +42,18 @@ void MIDIReceiver::advance()
     {
       if (this->keyStatus[noteNumber] == false)
       {
-        this->keyStatus[noteNumber] == true;
+        this->keyStatus[noteNumber] = true;
         this->numKeysPressed++;
-      }
-
-      if (noteNumber != this->lastNoteNumber)    // a key pressed later overrides previously presssed key
-      {
-        this->lastNoteNumber = noteNumber;
-        this->lastFrequency = this->noteNumberToFrequency(noteNumber);
-        this->lastVelocity = velocity;
-        this->noteOn(noteNumber, velocity);
+        noteOn(noteNumber, velocity); // maybe should be outside of "if"
       }
     }
     else // if the message was Note Off or Velocity = 0
     {
       if (this->keyStatus[noteNumber] == true)
       {
-        this->keyStatus[noteNumber] == false;
+        this->keyStatus[noteNumber] = false;
         this->numKeysPressed--;
-      }
-
-      if (noteNumber == lastNoteNumber)         // if last note was released, nothing should play
-      {
-        this->lastNoteNumber = -1;
-        this->noteOff(noteNumber, this->lastVelocity);
+        this->noteOff(noteNumber, velocity); // again maybe should be outside of "if"
       }
     }
 

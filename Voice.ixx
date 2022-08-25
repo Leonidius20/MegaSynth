@@ -33,6 +33,11 @@ public:
 
 	inline int getNoteNumber() { return midiNoteNumber; }
 
+	inline PolyBlepOscillator &getOsc1() { return osc1; }
+	inline PolyBlepOscillator &getOsc2() { return osc2; }
+
+	inline Filter &getFilter() { return filter; }
+
 	inline void setNoteNumber(int noteNumber) {
 		this->midiNoteNumber = noteNumber;
 		double frequency = 440.0 * std::pow(2.0, (noteNumber - 69.0) / 12.0);
@@ -44,8 +49,8 @@ public:
 	void setFree() { isActive = false; };
 
 private:
-	Oscillator osc1;
-	Oscillator osc2;
+	PolyBlepOscillator osc1;
+	PolyBlepOscillator osc2;
 	EnvelopeGenerator volumeEnv;
 	EnvelopeGenerator filterEnv;
 	Filter filter;

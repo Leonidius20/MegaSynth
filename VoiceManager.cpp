@@ -1,5 +1,7 @@
 module megasynth.voice_manager;
 
+import megasynth.voice;
+
 Voice *VoiceManager::findFreeVoice() {
 	for (size_t i = 0; i < numberOfVoices; i++) {
 		if (!voices[i].isVoiceActive()) {
@@ -41,4 +43,14 @@ double VoiceManager::nextSample() {
 		output += voice.nextSample();
 	}
 	return output;
+}
+
+void VoiceManager::setSampleRate(double rate) {
+	EnvelopeGenerator::setSampleRate(rate);
+	this->lfo.setSampleRate(rate);
+	for (size_t i = 0; i < numberOfVoices; i++) {
+		auto &voice = voices[i];
+		voice.getOsc1().setSampleRate(rate);
+		voice.getOsc2().setSampleRate(rate);
+	}
 }

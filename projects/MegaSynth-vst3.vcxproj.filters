@@ -146,6 +146,7 @@
     <ClCompile Include="..\Voice.ixx" />
     <ClCompile Include="..\VoiceManager.cpp" />
     <ClCompile Include="..\VoiceManager.ixx" />
+    <ClCompile Include="..\PolyBlepOscillator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../config.h" />
